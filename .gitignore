@@ -1,1 +1,10 @@
+#ignore directories
 debug/
+.vs/
+
+#ignore files
+*.atsln
+*.xml
+*.cproj
+
+

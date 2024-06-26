@@ -1,3 +1,9 @@
+/*
+ * @file : spi_functions.c
+ * @Author : Github.com/bheesma-10
+ * @Brief : source file for spi based functions   
+ */ 
+
 #include "spi_functions.h"
 #include "uart_functions.h"
 
@@ -7,7 +13,11 @@
 
 #define UNUSED(x)   (void)(x)
 
-
+/************************************************************************
+ *@brief : function to initialize spi peripheral
+ *@param : spi handler
+ *@retval : None
+************************************************************************/
 void spi_init(SPI_Handle_t *spi_handle){
 	
 	//initialize spi parameters 
@@ -101,6 +111,11 @@ void spi_init(SPI_Handle_t *spi_handle){
 	
 }
 
+/************************************************************************
+ *@brief : function to transmit spi data
+ *@param : pointer to data to transmit, size of data to be transmitted
+ *@retval : None
+************************************************************************/
 void spi_transmit(uint8_t *data, uint8_t datasize){
 	
 	uint8_t Tx_Counter = datasize;
@@ -115,12 +130,17 @@ void spi_transmit(uint8_t *data, uint8_t datasize){
 		data += sizeof(uint8_t);
 		Tx_Counter--;
 		
-		while(!(SPSR & (1UL<<SPIF)));                            //SPIF bit is cleared by first reading the SPSR with SPIF set, then accessing the SPDR
+		while(!(SPSR & (1UL<<SPIF)));   //SPIF bit is cleared by first reading the SPSR with SPIF set, then accessing the SPDR
 		flush_buffer = SPDR;
 	}
 	
 }
 
+/************************************************************************
+ *@brief : function to read spi data
+ *@param : pointer to data receiving variable, size of data to be received
+ *@retval : None
+************************************************************************/
 void spi_receive(uint8_t *data, uint8_t datasize){
 	
 	uint8_t Tx_Counter = datasize;
@@ -139,10 +159,20 @@ void spi_receive(uint8_t *data, uint8_t datasize){
 	
 }
 
+/************************************************************************
+ *@brief : function to set spi chip select pin low
+ *@param : None
+ *@retval : None
+************************************************************************/
 void cs_low(void){
 	PORTB &= ~(1<<SPI_CSN_PIN);                                 //make CS pin LOW
 }
 
+/************************************************************************
+ *@brief : function to set spi chip select pin high
+ *@param : None
+ *@retval : None
+************************************************************************/
 void cs_high(void){
 	PORTB |= (1<<SPI_CSN_PIN);                                  //make CS pin HIGH 	
 }

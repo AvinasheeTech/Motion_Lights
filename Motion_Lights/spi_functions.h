@@ -1,3 +1,9 @@
+/*
+ * @file : spi_functions.h
+ * @Author : Github.com/bheesma-10
+ * @Brief : header file for spi based functions   
+ */ 
+
 #ifndef _SPI_FUNCTIONS_H_
 #define _SPI_FUNCTIONS_H_
 

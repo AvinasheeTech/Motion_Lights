@@ -1,3 +1,9 @@
+/*
+ * @file : uart_functions.h
+ * @author : Github.com/bheesma-10
+ * @brief : header file for uart based functions   
+ */ 
+
 #ifndef STDIO_UART_H_
 #define STDIO_UART_H_
 

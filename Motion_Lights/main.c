@@ -1,8 +1,7 @@
 /*
- * Motion_Lights.c
- *
- * Created: 02-04-2024 15:17:57
- * Author : Github.com/bheesma-10
+ * @file : Motion_Lights.c
+ * @author : Github.com/bheesma-10
+ * @brief : main project file  
  */ 
 
 
@@ -19,8 +18,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_FIELDS 2    //json max field param
-#define Relay_Pin  0    //relay gpio pin
+#define MAX_FIELDS 2        //json max field param
+#define Relay_Pin  0        //relay gpio pin
 
 SPI_Handle_t spi_handle;    //spi handler
 
@@ -30,36 +29,60 @@ volatile uint16_t counter = 0;
 uint8_t seconds_passed = 0;
 
 // Used to control whether this node is sending or receiving (nrf24L01)
-bool role = false;  // true = TX role, false = RX role
+bool role = false;        // true = TX role, false = RX role
 char payload_buffer[30];  //buffer for message transmit and receive
 
-
+/*AVR Json params*/
 jsonNode_t *root;
 jsonDecoderStatus_t json_status = JSON_DECODER_KEY_NOT_FOUND;
 
 
-//	Interrupt on IRQ pin
+/***********************************************************************
+ *@brief : ISR function to handle interrupt on INT1 pin 
+ *@param : interrupt vector for respective interrupt
+ *@retval : None
+ *@note : this function is called when pin logic goes from low to high
+          i.e. on rising edge
+************************************************************************/
 ISR(INT1_vect){
 	motion_detected = true;
 }
 
+/***********************************************************************
+ *@brief : function to initialize motion sensor settings 
+ *@param : None
+ *@retval : None
+ *@note : interrupt based mechanism is chosen over polling
+************************************************************************/
 void motion_sensor_init(void){
-	cli();
+	cli();                               //clear global interrupt mask
 	MCUCR |= ((1<<ISC11) | (1<<ISC10));  //rising edge interrupt
-	GICR |= (1<<INT1);                 //enable interrupt 1
-	sei();
+	GICR |= (1<<INT1);                   //enable interrupt 1
+	sei();                               //set global interrupt mask
 }
 
+/***********************************************************************
+ *@brief : function to initialize adc peripheral of mcu 
+ *@param : adc channel number
+ *@retval : None
+ *@note : adc is used to read LDR sensor values.
+************************************************************************/
 void adc_init(uint8_t channel){
-	cli();
+	cli();                               //clear global interrupt mask
 	ADMUX |= ((1<<REFS1) | (1<<REFS0));  //Internal 2.56v as voltage reference
-	ADMUX |= (channel & 0x1F);            //select adc channel
+	ADMUX |= (channel & 0x1F);           //select adc channel
 	
 	ADCSRA |= (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);   //clock prescaler - 128
-	ADCSRA |= (1<<ADEN);                 //enable adc
-	sei();
+	ADCSRA |= (1<<ADEN);                              //enable adc
+	sei();                               //set global interrupt mask
 }
 
+/***********************************************************************
+ *@brief : function to read adc data
+ *@param : None
+ *@retval : 16bit adc data
+ *@note : actual adc value is only 10bit placed in two 8bit registers
+************************************************************************/
 uint16_t adc_read(void){
 	
 	ADCSRA |= (1<<ADSC);  //start conversion
@@ -70,25 +93,43 @@ uint16_t adc_read(void){
 	
 }
 
+/***********************************************************************
+ *@brief : function to initialize timer0 peripheral of mcu 
+ *@param : None
+ *@retval : None
+ *@note : timer0 keeps count of seconds passed for timeout calculation. 
+          Also, mode selected for the timer is CTC.
+************************************************************************/
 void timer0_init(void){
-	 cli();
-	 TCCR0 |= (1<<CS01) | (1<<CS00);   //clock select is divided by 64.
+	 cli();                            //clear global interrupt mask
+	 TCCR0 |= (1<<CS01) | (1<<CS00);   //clock selected is divided by 64.
 	 TCCR0 |= (1<<WGM01);              //sets mode to CTC
 	 OCR0 = 0x7C;                      //sets TOP to 124 so the timer will overflow every 1 ms.
 	 TIMSK |= (1<<OCIE0);              //Output Compare Match A Interrupt Enable
-	 sei();                             //enable global interrupts
+	 sei();                            //set global interrupt mask 
 }
 
+/***********************************************************************
+ *@brief : ISR function to handle interrupt on timer0 compare match
+ *@param : interrupt vector for respective interrupt
+ *@retval : None
+ *@note : this function is called every 1ms 
+************************************************************************/
 ISR(TIMER0_COMP_vect)
 {
-	counter ++;
+	counter ++;                  
 	if(counter==1000){
 		seconds_passed++;
 		counter = 0;
 	}
 }
 
-
+/***********************************************************************
+ *@brief : function to initialize radio module according to role selected
+ *@param : role - false implies RX role and true implies TX role
+ *@retval : sent or receive acknowledgement
+ *@note : both modules stay in receiver mode by default
+************************************************************************/
 int radio_operation(bool role){
 	/*When the nRF24L01 is in power down it must always settle in Standby for 1.5ms
 	before it can enter one of the TX or RX modes.*/
@@ -163,6 +204,12 @@ int radio_operation(bool role){
 	
 }
 
+/************************************************************************
+ *@brief : function for peripheral initialization of system 
+ *@param : None
+ *@retval : None
+ *@note : calls respective peripheral init functions
+************************************************************************/
 void init_system(void){
 		//Initialize SPI
 		spi_init(&spi_handle);
@@ -192,12 +239,22 @@ void init_system(void){
 		PORTA |= (1<<Relay_Pin); 
 }
 
+/***********************************************************************
+ *@brief : function to enable peripheral of mcu 
+ *@param : None
+ *@retval : None
+************************************************************************/
 void enable_peripherals(void){
 	SPCR |= (1<<SPE);                    //enable SPI
 	UCSRB |= ((1 << RXEN) | (1 << TXEN)); /* Turn on UART transmission and reception */
 	ADCSRA |= (1<<ADEN);                 //enable ADC
 }
 
+/***********************************************************************
+ *@brief : function to disable peripheral of mcu 
+ *@param : None
+ *@retval : None
+************************************************************************/
 void disable_peripherals(void){
 	SPCR |= ~(1<<SPE);                    //disable SPI
 	UCSRB |= (~(1 << RXEN) | ~(1 << TXEN)); /* Turn off UART transmission and reception */
@@ -209,7 +266,7 @@ int main(void)
     //Initialize system
 	init_system();	
 	
-	uint8_t lights_on = 0;
+	uint8_t lights_on = 0;       //variable indicating light status
 	
     while (1) 
     {
@@ -242,7 +299,7 @@ int main(void)
         
 		
 		/*action to be taken when other node sends motion data*/
-		if(received_motion){
+		if((received_motion==1) && (role==false)){
 			PORTA &= ~(1<<Relay_Pin);               //Close Relay N.O. Contact
 			counter = 0;                            //reset counter
 			seconds_passed = 0;                     //reset seconds counter

@@ -1,3 +1,9 @@
+/*
+ * @file : nrf24l01_functions.h
+ * @Author : Github.com/bheesma-10
+ * @Brief : header file for nrf24l01 based radio module operations   
+ */ 
+
 #ifndef _NRF24L01_FUNCTIONS_H_
 #define _NRF24L01_FUNCTIONS_H_
 
