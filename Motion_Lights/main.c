@@ -1,6 +1,6 @@
 /*
  * @file : Motion_Lights.c
- * @author : Github.com/bheesma-10
+ * @author : Avinashee Tech
  * @brief : main project file  
  */ 
 
