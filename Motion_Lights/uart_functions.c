@@ -1,6 +1,6 @@
 /*
  * @file : uart_functions.c
- * @author : Github.com/bheesma-10
+ * @author : Avinashee Tech
  * @brief : source file for uart based functions   
  */ 
 
