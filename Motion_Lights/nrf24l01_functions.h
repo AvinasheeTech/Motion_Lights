@@ -1,6 +1,6 @@
 /*
  * @file : nrf24l01_functions.h
- * @Author : Github.com/bheesma-10
+ * @Author : Avinashee Tech
  * @Brief : header file for nrf24l01 based radio module operations   
  */ 
 
