@@ -1,6 +1,6 @@
 /*
  * @file : spi_functions.c
- * @Author : Github.com/bheesma-10
+ * @Author : Avinashee Tech
  * @Brief : source file for spi based functions   
  */ 
 
